@@ -11,6 +11,7 @@ import random
 import re
 import json
 import Crypto
+from Crypto.Hash import SHA3_256
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
 
@@ -21,7 +22,7 @@ x_hex = "1d42d0b0e55ccba0dd86df9f32f44c4efd7cbcdbbb7f36fd38b2ca680ab126e9"
 y_hex = "ce091928fa3738dc18f529bf269ade830eeb78672244fd2bdfbadcb26c4894ff"
 x_decimal = int(x_hex, 16)
 y_decimal = int(y_hex, 16)
-IKey_Ser = Point(x_decimal, y_decimal, curve)
+ikpub = Point(x_decimal, y_decimal, curve)
 
 n = curve.order
 p = curve.field
@@ -102,7 +103,10 @@ def sign_message(m, s_a):
     k = random.randint(0, n - 1)
     R = k * P
     r = R.x
-    h = SHA3_256(concatenate_numbers(r, m))
+    concatenated = concatenate_numbers(r, m)
+    hasher = SHA3_256.new()  # Create a new SHA3_256 object
+    hasher.update(concatenated.to_bytes((concatenated.bit_length() + 7) // 8, byteorder='big'))  # Update the hasher with the concatenated data
+    h = int.from_bytes(hasher.digest(), byteorder='big') % n
     s = (k - h * s_a) % n
     return h, s
 
@@ -111,6 +115,6 @@ def verify_signature(m, s, h, q_a):
     v = V.x
     h_prime = SHA3_256(concatenate_numbers(v, m)) % n
     return h == h_prime
-
-h, s = sign_message(stuID)
+s_a, q_a = keyGen()
+h, s = sign_message(stuID, s_a)
 messageToSend = {'ID': stuID, 'H': h, 'S': s, 'IKPUB.X': ikpub.x, 'IKPUB.Y': ikpub.y}
