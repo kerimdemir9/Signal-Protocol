@@ -91,6 +91,33 @@ def ResetOTK(h,s):
     response = requests.delete('{}/{}'.format(API_URL, "ResetOTK"), json = mes)		
     if((response.ok) == False): print(response.json())
 
+
+def concatenate_integers_as_bytes(num1, num2):
+    """ Concatenates two integers as bytes and returns the result as an integer.
+    
+    Args:
+    num1 (int): The first integer.
+    num2 (int): The second integer.
+
+    Returns:
+    int: The integer representation of the concatenated byte array.
+    """
+    # Calculate the number of bytes needed for each integer
+    num1_bytes_length = (num1.bit_length() + 7) // 8
+    num2_bytes_length = (num2.bit_length() + 7) // 8
+
+    # Convert each integer to bytes
+    num1_bytes = num1.to_bytes(num1_bytes_length, byteorder='big')
+    num2_bytes = num2.to_bytes(num2_bytes_length, byteorder='big')
+
+    # Concatenate the byte representations
+    concatenated_bytes = num1_bytes + num2_bytes
+
+    # Convert the concatenated bytes back to an integer
+    concatenated_integer = int.from_bytes(concatenated_bytes, byteorder='big')
+
+    return concatenated_integer
+
 def keyGen():
     s_a = Random.new().read(int(math.log(n,2)))
     s_a = int.from_bytes(s_a, byteorder='big')%n
@@ -105,26 +132,36 @@ def sign_message(private_key, message, curve):
     R = k * curve.generator
     r = R.x % curve.order
 
-    # Hash r concatenated with the message
-    concatenated = str(r) + str(message)  # Assuming message is a string
-    hasher = SHA3_256.new(concatenated.encode())
-    h = int(hasher.hexdigest(), 16) % curve.order
+    # Convert r and message to bytes
+    r_bytes = r.to_bytes((r.bit_length() + 7) // 8, byteorder='big')
+    message_bytes = message.to_bytes((message.bit_length() + 7) // 8, byteorder='big')
+
+    # Concatenate r and message bytes
+    concatenated_bytes = r_bytes + message_bytes
+
+    # Hash the concatenated bytes
+    hasher = SHA3_256.new()
+    hasher.update(concatenated_bytes)
+    h = int.from_bytes(hasher.digest(), byteorder='big') % curve.order
 
     # Calculate s
     s = (k - private_key * h) % curve.order
     return (h, s)
 
 def verify_signature(public_key, message, signature, curve):
-    """ Verify a signature using ECC and SHA3-256. """
     h, s = signature
-    # Calculate V = sP + hQ_A
+
     V = s * curve.generator + h * public_key
     v = V.x % curve.order
 
-    # Hash v concatenated with the message
-    concatenated = str(v) + str(message)  # Assuming message is a string
-    hasher = SHA3_256.new(concatenated.encode())
-    h_prime = int(hasher.hexdigest(), 16) % curve.order
+    v_bytes = v.to_bytes((v.bit_length() + 7) // 8, byteorder='big')
+    message_bytes = message.to_bytes((message.bit_length() + 7) // 8, byteorder='big')
+
+    concatenated_bytes = v_bytes + message_bytes
+
+    hasher = SHA3_256.new()
+    hasher.update(concatenated_bytes)
+    h_prime = int.from_bytes(hasher.digest(), byteorder='big') % curve.order
 
     return h == h_prime
 
@@ -132,3 +169,9 @@ s_a, q_a = keyGen()
 h, s = sign_message(s_a, stuID, curve)
 
 IKRegReq(h, s, q_a.x, q_a.y)
+
+s_a_pre, Q_a_pre = keyGen()
+pkpub = concatenate_integers_as_bytes(Q_a_pre.x, Q_a_pre.y)
+h_pre, s_pre = sign_message(s_a, pkpub, curve)
+
+SPKReg(h_pre, s_pre, Q_a_pre.x, Q_a_pre.y)
