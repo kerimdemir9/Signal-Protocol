@@ -11,7 +11,7 @@ import random
 import re
 import json
 import Crypto
-from Crypto.Hash import SHA3_256
+from Crypto.Hash import SHA3_256, HMAC, SHA256
 from Crypto import Random   # a bit better secure random number generation 
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
@@ -103,52 +103,63 @@ def keyGen():
 def sign_message(private_key, message, curve):
     k = Random.new().read(int(math.log(curve.order, 2)))
     k = int.from_bytes(k, byteorder='big') % (curve.order - 1) + 1
-
-    # Calculate R = k * P
     R = k * curve.generator
     r = R.x % curve.order
-
     r_bytes = r.to_bytes((r.bit_length() + 7) // 8, byteorder='big')
     message_bytes = message.to_bytes((message.bit_length() + 7) // 8, byteorder='big')
     concatenated_bytes = r_bytes + message_bytes
-
     hasher = SHA3_256.new()
     hasher.update(concatenated_bytes)
     h = int.from_bytes(hasher.digest(), byteorder='big') % curve.order
-
     s = (k - private_key * h) % curve.order
     return (h, s)
 
 def verify_signature(public_key, message, signature, curve):
     h, s = signature
-
     V = s * curve.generator + h * public_key
     v = V.x % curve.order
-
     v_bytes = v.to_bytes((v.bit_length() + 7) // 8, byteorder='big')
     message_bytes = message.to_bytes((message.bit_length() + 7) // 8, byteorder='big')
-
     concatenated_bytes = v_bytes + message_bytes
-
     hasher = SHA3_256.new()
     hasher.update(concatenated_bytes)
     h_prime = int.from_bytes(hasher.digest(), byteorder='big') % curve.order
-
     return h == h_prime
 
 def convert_and_concatenate(spk_x, spk_y):
     spk_x_bytes_length = (spk_x.bit_length() + 7) // 8
     spk_y_bytes_length = (spk_y.bit_length() + 7) // 8
-
-    # Convert each coordinate to a byte array
     spk_x_bytes = spk_x.to_bytes(spk_x_bytes_length, byteorder='big')
     spk_y_bytes = spk_y.to_bytes(spk_y_bytes_length, byteorder='big')
-
-    # Concatenate the byte arrays
     concatenated_bytes = spk_x_bytes + spk_y_bytes
-
     return int.from_bytes(concatenated_bytes, byteorder='big')
 
+def gen_HMAC(spk_pri, iks_pub, curve):
+    T = spk_pri * iks_pub
+    predefined_str = b'TheHMACKeyToSuccess'
+    T_y_bytes = T.y.to_bytes((T.y.bit_length() + 7) // 8, byteorder='big')
+    T_x_bytes = T.x.to_bytes((T.x.bit_length() + 7) // 8, byteorder='big')
+    U = predefined_str + T_y_bytes + T_x_bytes
+    hasher = SHA3_256.new()
+    hasher.update(U)
+    KHMAC = hasher.digest()
+    return KHMAC
+
+def calculate_hmac_for_otk(otk_public, khmac):
+    otk_x_bytes = otk_public.x.to_bytes((otk_public.x.bit_length() + 7) // 8, byteorder='big')
+    otk_y_bytes = otk_public.y.to_bytes((otk_public.y.bit_length() + 7) // 8, byteorder='big')
+    data = otk_x_bytes + otk_y_bytes
+    hmac_obj = HMAC.new(khmac, digestmod=SHA256)
+    hmac_obj.update(data)
+    return hmac_obj.hexdigest()
+
+def register_otks(curve, n, khmac, stuID):
+    for i in range(10):
+        otk_private, otk_public = keyGen()
+
+        hmac_value = calculate_hmac_for_otk(otk_public, khmac)
+        OTKReg(i, otk_public.x, otk_public.y, hmac_value)
+        
 s_a, q_a = keyGen()
 h, s = sign_message(s_a, stuID, curve)
 
@@ -159,3 +170,7 @@ spkpub_concatenated = convert_and_concatenate(spkpub.x, spkpub.y)
 h_pre, s_pre = sign_message(s_a, spkpub_concatenated, curve)
 
 SPKReg(h_pre, s_pre, spkpub.x, spkpub.y)
+
+khmac = gen_HMAC(spkpr, IKey_Ser, curve)
+
+register_otks(curve, n, khmac, stuID)
