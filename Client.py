@@ -12,6 +12,7 @@ import re
 import json
 import Crypto
 from Crypto.Hash import SHA3_256
+from Crypto import Random   # a bit better secure random number generation 
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
 
@@ -22,7 +23,7 @@ x_hex = "1d42d0b0e55ccba0dd86df9f32f44c4efd7cbcdbbb7f36fd38b2ca680ab126e9"
 y_hex = "ce091928fa3738dc18f529bf269ade830eeb78672244fd2bdfbadcb26c4894ff"
 x_decimal = int(x_hex, 16)
 y_decimal = int(y_hex, 16)
-ikpub = Point(x_decimal, y_decimal, curve)
+IKey_Ser = Point(x_decimal, y_decimal, curve)
 
 n = curve.order
 p = curve.field
@@ -90,31 +91,44 @@ def ResetOTK(h,s):
     response = requests.delete('{}/{}'.format(API_URL, "ResetOTK"), json = mes)		
     if((response.ok) == False): print(response.json())
 
-def concatenate_numbers(num1, num2):
-    concatenated_str = str(num1) + str(num2)
-    return int(concatenated_str)
-
 def keyGen():
-    s_a = random.randint(1, n - 1)
+    s_a = Random.new().read(int(math.log(n,2)))
+    s_a = int.from_bytes(s_a, byteorder='big')%n
     q_a = s_a * P
     return s_a, q_a
 
-def sign_message(m, s_a):
-    k = random.randint(0, n - 1)
-    R = k * P
-    r = R.x
-    concatenated = concatenate_numbers(r, m)
-    hasher = SHA3_256.new()  # Create a new SHA3_256 object
-    hasher.update(concatenated.to_bytes((concatenated.bit_length() + 7) // 8, byteorder='big'))  # Update the hasher with the concatenated data
-    h = int.from_bytes(hasher.digest(), byteorder='big') % n
-    s = (k - h * s_a) % n
-    return h, s
+def sign_message(private_key, message, curve):
+    k = Random.new().read(int(math.log(curve.order, 2)))
+    k = int.from_bytes(k, byteorder='big') % (curve.order - 1) + 1
 
-def verify_signature(m, s, h, q_a):
-    V = s * P + h * q_a
-    v = V.x
-    h_prime = SHA3_256(concatenate_numbers(v, m)) % n
+    # Calculate R = k * P
+    R = k * curve.generator
+    r = R.x % curve.order
+
+    # Hash r concatenated with the message
+    concatenated = str(r) + str(message)  # Assuming message is a string
+    hasher = SHA3_256.new(concatenated.encode())
+    h = int(hasher.hexdigest(), 16) % curve.order
+
+    # Calculate s
+    s = (k - private_key * h) % curve.order
+    return (h, s)
+
+def verify_signature(public_key, message, signature, curve):
+    """ Verify a signature using ECC and SHA3-256. """
+    h, s = signature
+    # Calculate V = sP + hQ_A
+    V = s * curve.generator + h * public_key
+    v = V.x % curve.order
+
+    # Hash v concatenated with the message
+    concatenated = str(v) + str(message)  # Assuming message is a string
+    hasher = SHA3_256.new(concatenated.encode())
+    h_prime = int(hasher.hexdigest(), 16) % curve.order
+
     return h == h_prime
+
 s_a, q_a = keyGen()
-h, s = sign_message(stuID, s_a)
-messageToSend = {'ID': stuID, 'H': h, 'S': s, 'IKPUB.X': ikpub.x, 'IKPUB.Y': ikpub.y}
+h, s = sign_message(s_a, stuID, curve)
+
+IKRegReq(h, s, q_a.x, q_a.y)
