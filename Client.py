@@ -14,10 +14,21 @@ import Crypto
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
 
-stuID = #Enter Your ID
+stuID = 28928
 
-#Server's Identitiy public key
-IKey_Ser = # Use the values in the project description document to form the server's IK as a point on the EC. Note that the values should be in decimal.
+curve = Curve.get_curve('secp256k1')
+x_hex = "1d42d0b0e55ccba0dd86df9f32f44c4efd7cbcdbbb7f36fd38b2ca680ab126e9"
+y_hex = "ce091928fa3738dc18f529bf269ade830eeb78672244fd2bdfbadcb26c4894ff"
+x_decimal = int(x_hex, 16)
+y_decimal = int(y_hex, 16)
+IKey_Ser = Point(x_decimal, y_decimal, curve)
+
+n = curve.order
+p = curve.field
+P = curve.generator
+a = curve.a
+b = curve.b
+
 
 def IKRegReq(h,s,x,y):
     mes = {'ID':stuID, 'H': h, 'S': s, 'IKPUB.X': x, 'IKPUB.Y': y}
@@ -78,3 +89,28 @@ def ResetOTK(h,s):
     response = requests.delete('{}/{}'.format(API_URL, "ResetOTK"), json = mes)		
     if((response.ok) == False): print(response.json())
 
+def concatenate_numbers(num1, num2):
+    concatenated_str = str(num1) + str(num2)
+    return int(concatenated_str)
+
+def keyGen():
+    s_a = random.randint(1, n - 1)
+    q_a = s_a * P
+    return s_a, q_a
+
+def sign_message(m, s_a):
+    k = random.randint(0, n - 1)
+    R = k * P
+    r = R.x
+    h = SHA3_256(concatenate_numbers(r, m))
+    s = (k - h * s_a) % n
+    return h, s
+
+def verify_signature(m, s, h, q_a):
+    V = s * P + h * q_a
+    v = V.x
+    h_prime = SHA3_256(concatenate_numbers(v, m)) % n
+    return h == h_prime
+
+h, s = sign_message(stuID)
+messageToSend = {'ID': stuID, 'H': h, 'S': s, 'IKPUB.X': ikpub.x, 'IKPUB.Y': ikpub.y}
