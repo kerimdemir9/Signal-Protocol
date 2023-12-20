@@ -140,28 +140,17 @@ def verify_signature(public_key, message, signature, curve):
 
     return h == h_prime
 
-def concatenate_integers_as_bytes(num1, num2):
-    """ Concatenates two integers at the byte level and returns the result as an integer.
-    
-    Args:
-    num1 (int): The first integer.
-    num2 (int): The second integer.
+def convert_and_concatenate(spk_x, spk_y):
+    spk_x_bytes_length = (spk_x.bit_length() + 7) // 8
+    spk_y_bytes_length = (spk_y.bit_length() + 7) // 8
 
-    Returns:
-    int: The integer formed by concatenating the byte representations of num1 and num2.
-    """
-    # Determine the byte length of each integer
-    num1_bytes_length = (num1.bit_length() + 7) // 8
-    num2_bytes_length = (num2.bit_length() + 7) // 8
-
-    # Convert each integer to a byte array
-    num1_bytes = num1.to_bytes(num1_bytes_length, byteorder='big')
-    num2_bytes = num2.to_bytes(num2_bytes_length, byteorder='big')
+    # Convert each coordinate to a byte array
+    spk_x_bytes = spk_x.to_bytes(spk_x_bytes_length, byteorder='big')
+    spk_y_bytes = spk_y.to_bytes(spk_y_bytes_length, byteorder='big')
 
     # Concatenate the byte arrays
-    concatenated_bytes = num1_bytes + num2_bytes
+    concatenated_bytes = spk_x_bytes + spk_y_bytes
 
-    # Convert the concatenated byte array back to an integer
     return int.from_bytes(concatenated_bytes, byteorder='big')
 
 s_a, q_a = keyGen()
@@ -169,8 +158,8 @@ h, s = sign_message(s_a, stuID, curve)
 
 IKRegReq(h, s, q_a.x, q_a.y)
 
-s_a_pre, Q_a_pre = keyGen()
-pkpub = concatenate_integers(Q_a_pre.x, Q_a_pre.y)
-h_pre, s_pre = sign_message(s_a, pkpub, curve)
+spkpr, spkpub = keyGen()
+spkpub_concatenated = convert_and_concatenate(spkpub.x, spkpub.y)
+h_pre, s_pre = sign_message(s_a, spkpub_concatenated, curve)
 
-SPKReg(h_pre, s_pre, Q_a_pre.x, Q_a_pre.y)
+SPKReg(h_pre, s_pre, spkpub.x, spkpub.y)
