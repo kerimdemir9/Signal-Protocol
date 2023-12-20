@@ -52,12 +52,8 @@ def IKRegVerify(code):
 def SPKReg(h,s,x,y):
     mes = {'ID':stuID, 'H': h, 'S': s, 'SPKPUB.X': x, 'SPKPUB.Y': y}
     print("Sending message is: ", mes)
-    response = requests.put('{}/{}'.format(API_URL, "SPKReg"), json = mes)		
-    if((response.ok) == False): 
-        print(response.json())
-    else: 
-        res = response.json()
-        return res['SPKPUB.X'], res['SPKPUB.Y'], res['H'], res['S']
+    response = requests.put('{}/{}'.format(API_URL, "SPKReg"), json = mes)
+    print(response.json())
 
 def OTKReg(keyID,x,y,hmac):
     mes = {'ID':stuID, 'KEYID': keyID, 'OTKI.X': x, 'OTKI.Y': y, 'HMACI': hmac}
