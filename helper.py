@@ -11,7 +11,7 @@ def IKRegReq(h,s,x,y):
     response = requests.put('{}/{}'.format(API_URL, "IKRegReq"), json = mes)
     print(response.json())
 
-def IKRegVerify(code, IKey_Pr, IKey_Pub):
+def IKRegVerify(IKey_Pr, IKey_Pub, code):
     mes = {'ID':stuID, 'CODE': code}
     print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "IKRegVerif"), json = mes)

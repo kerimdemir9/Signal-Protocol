@@ -49,6 +49,7 @@ def concatenate(x, y):
 IK_Pub = Point(int("0x669e867f04ccbc676470f44c6da945100f5ed97750ce35cab13461d0572261c2", 16),
                int("0xaf4ed418197b143264a8edb177e289dbe11b0c7335554683ba9844b14031a170", 16), curve)
 IK_Pri = 1499533378629092443181884660138759147308836931401965846740365306604911800652
+
 # sign IK_pri
 h, s = sign_message(stuID, IK_Pri)
 # Register my IK
@@ -56,18 +57,21 @@ helper.IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
 
 verification_code = 630633
 reset_code = 645077
-
+# reset signature
 reset_sig_stu_id_h, reset_sig_stu_id_s = sign_message(stuID, IK_Pri)
 # Verify myself with the given code
 helper.IKRegVerify(IK_Pri, IK_Pub, verification_code)
 
+# SPK_Pub, SPK_Pri = keyGen() # generate SPKs
 SPK_Pub = Point(int("0x9907000b3b46c9308462dd70e0c0c2506cb562ff9ca25a916d2e67a68b5670e0", 16),
                 int("0xed4930f2f4f7cb77c84c62526158b4d820af068af899ee3242a697a69408721c", 16), curve)
 SPK_Pri = 27280058814014322835872311304572730835600028459540571567859428260032877839542
 
+# sign SPKs
 SPK_h, SPK_s = sign_message(int.from_bytes(concatenate(SPK_Pub.x, SPK_Pub.y), byteorder='big'), IK_Pri)
 helper.SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
 
+# Creating OTKs below part
 T = SPK_Pri * IKey_Ser_Pub
 U = b'TheHMACKeyToSuccess' + concatenate(T.y, T.x)
 
@@ -78,7 +82,7 @@ KHMAC_to_byte = KHMAC.to_bytes((KHMAC.bit_length() + 7) // 8, byteorder='big')
 OTKs = []
 HMACs = []
 
-for i in range(10):
+for i in range(10)
     OTK_Pub, OTK_Pri = keyGen()
     hmac = HMAC.new(KHMAC_to_byte, concatenate(OTK_Pub.x, OTK_Pub.y), digestmod=SHA256)
     hmac = hmac.hexdigest()
