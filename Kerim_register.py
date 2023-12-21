@@ -82,7 +82,7 @@ KHMAC_to_byte = KHMAC.to_bytes((KHMAC.bit_length() + 7) // 8, byteorder='big')
 OTKs = []
 HMACs = []
 
-for i in range(10)
+for i in range(10):
     OTK_Pub, OTK_Pri = keyGen()
     hmac = HMAC.new(KHMAC_to_byte, concatenate(OTK_Pub.x, OTK_Pub.y), digestmod=SHA256)
     hmac = hmac.hexdigest()
