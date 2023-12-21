@@ -2,7 +2,7 @@ import requests
 
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
-stuID = 28853
+stuID = 28853  # write your student ID
 
 
 def IKRegReq(h,s,x,y):
