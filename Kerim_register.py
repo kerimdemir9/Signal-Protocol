@@ -2,9 +2,11 @@ import math
 from ecpy.curves import Curve, Point
 from Crypto.Hash import SHA3_256, HMAC, SHA256
 from Crypto import Random  # a bit better secure random number generation
-import helper
+import requests
 
-stuID = 28853
+
+API_URL = 'http://harpoon1.sabanciuniv.edu:9999'
+stuID = 28853  # write your student ID
 curve = Curve.get_curve('secp256k1')
 IKey_Ser_Pub = Point(int("1d42d0b0e55ccba0dd86df9f32f44c4efd7cbcdbbb7f36fd38b2ca680ab126e9", 16),
                      int("ce091928fa3738dc18f529bf269ade830eeb78672244fd2bdfbadcb26c4894ff", 16), curve)
@@ -14,6 +16,61 @@ P = curve.generator
 a = curve.a
 b = curve.b
 
+
+def IKRegReq(h,s,x,y):
+    mes = {'ID':stuID, 'H': h, 'S': s, 'IKPUB.X': x, 'IKPUB.Y': y}
+    print("Sending message is: ", mes)
+    response = requests.put('{}/{}'.format(API_URL, "IKRegReq"), json = mes)
+    print(response.json())
+
+def IKRegVerify(IKey_Pr, IKey_Pub, code):
+    mes = {'ID':stuID, 'CODE': code}
+    print("Sending message is: ", mes)
+    response = requests.put('{}/{}'.format(API_URL, "IKRegVerif"), json = mes)
+    if((response.ok) == False): raise Exception(response.json())
+    else:
+        print(response.json())
+        f = open('Identity_Key.txt', 'w')
+        f.write("IK.Prv: "+str(IKey_Pr)+"\n"+"IK.Pub.x: "+str(IKey_Pub.x)+"\n"+"IK.Pub.y: "+str(IKey_Pub.y))
+        f.close()
+
+def SPKReg(h,s,x,y):
+    mes = {'ID':stuID, 'H': h, 'S': s, 'SPKPUB.X': x, 'SPKPUB.Y': y}
+    print("Sending message is: ", mes)
+    response = requests.put('{}/{}'.format(API_URL, "SPKReg"), json = mes)
+    print(response.json())
+
+def OTKReg(keyID,x,y,hmac):
+    mes = {'ID':stuID, 'KEYID': keyID, 'OTKI.X': x, 'OTKI.Y': y, 'HMACI': hmac}
+    print("Sending message is: ", mes)
+    response = requests.put('{}/{}'.format(API_URL, "OTKReg"), json = mes)
+    print(response.json())
+    if((response.ok) == False): return False
+    else: return True
+
+
+def ResetIK(rcode):
+    mes = {'ID':stuID, 'RCODE': rcode}
+    print("Sending message is: ", mes)
+    response = requests.delete('{}/{}'.format(API_URL, "ResetIK"), json = mes)
+    print(response.json())
+    if((response.ok) == False): return False
+    else: return True
+
+def ResetSPK(h,s):
+    mes = {'ID':stuID, 'H': h, 'S': s}
+    print("Sending message is: ", mes)
+    response = requests.delete('{}/{}'.format(API_URL, "ResetSPK"), json = mes)
+    print(response.json())
+    if((response.ok) == False): return False
+    else: return True
+
+
+def ResetOTK(h,s):
+    mes = {'ID':stuID, 'H': h, 'S': s}
+    print("Sending message is: ", mes)
+    response = requests.delete('{}/{}'.format(API_URL, "ResetOTK"), json = mes)
+    if((response.ok) == False): print(response.json())
 
 def keyGen():
     secret = Random.new().read(int(math.log(n, 2)))
@@ -53,14 +110,14 @@ IK_Pri = 14995333786290924431818846601387591473088369314019658467403653066049118
 # sign IK_pri
 h, s = sign_message(stuID, IK_Pri)
 # Register my IK
-helper.IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
+IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
 
 verification_code = 630633
 reset_code = 645077
 # reset signature
 reset_sig_stu_id_h, reset_sig_stu_id_s = sign_message(stuID, IK_Pri)
 # Verify myself with the given code
-helper.IKRegVerify(IK_Pri, IK_Pub, verification_code)
+IKRegVerify(IK_Pri, IK_Pub, verification_code)
 
 # SPK_Pub, SPK_Pri = keyGen() # generate SPKs
 SPK_Pub = Point(int("0x9907000b3b46c9308462dd70e0c0c2506cb562ff9ca25a916d2e67a68b5670e0", 16),
@@ -69,7 +126,7 @@ SPK_Pri = 2728005881401432283587231130457273083560002845954057156785942826003287
 
 # sign SPKs
 SPK_h, SPK_s = sign_message(int.from_bytes(concatenate(SPK_Pub.x, SPK_Pub.y), byteorder='big'), IK_Pri)
-helper.SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
+SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
 
 # Creating OTKs below part
 T = SPK_Pri * IKey_Ser_Pub
@@ -89,4 +146,4 @@ for i in range(10):
     OTKs.append((OTK_Pub, OTK_Pri))
     HMACs.append(hmac)
 
-    helper.OTKReg(i, OTK_Pub.x, OTK_Pub.y, hmac)
+    OTKReg(i, OTK_Pub.x, OTK_Pub.y, hmac)
