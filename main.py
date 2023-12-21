@@ -146,6 +146,7 @@ IK_Pri = 14995333786290924431818846601387591473088369314019658467403653066049118
 # IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
 verification_code = 630633
 reset_code = 645077
+reset_sig_stu_id_h, reset_sig_stu_id_s = sign_message(stuID, IK_Pri)
 # IKRegVerify(IK_Pri, IK_Pub, verification_code)
 SPK_Pub = (0x9907000b3b46c9308462dd70e0c0c2506cb562ff9ca25a916d2e67a68b5670e0 ,
            0xed4930f2f4f7cb77c84c62526158b4d820af068af899ee3242a697a69408721c)
