@@ -110,14 +110,14 @@ IK_Pri = 14995333786290924431818846601387591473088369314019658467403653066049118
 # sign IK_pri
 h, s = sign_message(stuID, IK_Pri)
 # Register my IK
-IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
+# IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
 
 verification_code = 630633
 reset_code = 645077
 # reset signature
 reset_sig_stu_id_h, reset_sig_stu_id_s = sign_message(stuID, IK_Pri)
 # Verify myself with the given code
-IKRegVerify(IK_Pri, IK_Pub, verification_code)
+# IKRegVerify(IK_Pri, IK_Pub, verification_code)
 
 # SPK_Pub, SPK_Pri = keyGen() # generate SPKs
 SPK_Pub = Point(int("0x9907000b3b46c9308462dd70e0c0c2506cb562ff9ca25a916d2e67a68b5670e0", 16),
@@ -126,7 +126,7 @@ SPK_Pri = 2728005881401432283587231130457273083560002845954057156785942826003287
 
 # sign SPKs
 SPK_h, SPK_s = sign_message(int.from_bytes(concatenate(SPK_Pub.x, SPK_Pub.y), byteorder='big'), IK_Pri)
-SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
+# SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
 
 # Creating OTKs below part
 T = SPK_Pri * IKey_Ser_Pub
@@ -147,3 +147,6 @@ for i in range(10):
     HMACs.append(hmac)
 
     OTKReg(i, OTK_Pub.x, OTK_Pub.y, hmac)
+print(OTKs)
+print("\n\n")
+print(HMACs)

@@ -18,7 +18,7 @@ import json
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999/'
 
-stuID = # Enter your student ID
+stuID = 28853
 stuIDB = 18007
 
 def egcd(a, b):
@@ -55,13 +55,13 @@ def SignGen(message, E, sA):
     R = k*P
     r = R.x % n
     h = int.from_bytes(SHA3_256.new(r.to_bytes((r.bit_length()+7)//8, byteorder='big')+message).digest(), byteorder='big')%n
-    s = (sA*h + k) % n
+    s = (k - sA*h) % n
     return h, s
 
 def SignVer(message, h, s, E, QA):
     n = E.order
     P = E.generator
-    V = s*P - h*QA
+    V = s*P + h*QA
     v = V.x % n
     h_ = int.from_bytes(SHA3_256.new(v.to_bytes((v.bit_length()+7)//8, byteorder='big')+message).digest(), byteorder='big')%n
     if h_ == h:
@@ -70,7 +70,6 @@ def SignVer(message, h, s, E, QA):
         return False
 
 
-#server's Identitiy public key
 IKey_Ser = Point(13235124847535533099468356850397783155412919701096209585248805345836420638441, 93192522080143207888898588123297137412359674872998361245305696362578896786687, curve)
 
 def IKRegReq(h,s,x,y):
