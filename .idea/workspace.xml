@@ -8,7 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Phase1/Kerim_register.py" beforeDir="false" afterPath="$PROJECT_DIR$/Phase1/Kerim_register.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/phase2_Client_basic.py" beforeDir="false" afterPath="$PROJECT_DIR$/phase2_Client_basic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kerim_phase2.py" beforeDir="false" afterPath="$PROJECT_DIR$/kerim_phase2.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +102,8 @@
       <workItem from="1703154816970" duration="1684000" />
       <workItem from="1703165863840" duration="419000" />
       <workItem from="1703526693240" duration="103000" />
-      <workItem from="1703610210767" duration="4218000" />
+      <workItem from="1703610210767" duration="4264000" />
+      <workItem from="1703753949046" duration="4035000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <option name="closed" value="true" />

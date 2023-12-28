@@ -139,6 +139,8 @@ KHMAC_to_byte = KHMAC.to_bytes((KHMAC.bit_length() + 7) // 8, byteorder='big')
 OTKs = []
 HMACs = []
 
+ResetOTK(h, s)
+
 for i in range(10):
     OTK_Pub, OTK_Pri = keyGen()
     hmac = HMAC.new(KHMAC_to_byte, concatenate(OTK_Pub.x, OTK_Pub.y), digestmod=SHA256)
@@ -147,6 +149,10 @@ for i in range(10):
     HMACs.append(hmac)
 
     OTKReg(i, OTK_Pub.x, OTK_Pub.y, hmac)
-print(OTKs)
 print("\n\n")
-print(HMACs)
+print("printing OTKs")
+for i in range(len(OTKs)):
+    print("OTK {}:".format(i))
+    print("x: {}".format(OTKs[i][0].x))
+    print("y: {}".format(OTKs[i][0].y))
+    print("priv: {}".format(OTKs[i][1]))
