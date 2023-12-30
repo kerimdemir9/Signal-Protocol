@@ -103,28 +103,29 @@ def concatenate(x, y):
 
 
 # IK_Pub, IK_Pri = keyGen() # generate IKs
-IK_Pub = Point(int("0x669e867f04ccbc676470f44c6da945100f5ed97750ce35cab13461d0572261c2", 16),
-               int("0xaf4ed418197b143264a8edb177e289dbe11b0c7335554683ba9844b14031a170", 16), curve)
-IK_Pri = 1499533378629092443181884660138759147308836931401965846740365306604911800652
+IK_Pub = Point(99729665936069400189049630025268145612680094240728273595298801806858959619148,
+               51191321905177615780693558879744615245596224651621976306951564536010637931746, curve)
+IK_Pri = 68708997509867735893754012737457161590792631113345894906193292191370424524695
 
 # sign IK_pri
 h, s = sign_message(stuID, IK_Pri)
 # Register my IK
 # IKRegReq(h, s, IK_Pub.x, IK_Pub.y)
 
-verification_code = 630633
-reset_code = 645077
-# reset signature
+verification_code = 633909
+reset_code = 518138
+# ResetIK(reset_code)
+# # reset signature
 reset_sig_stu_id_h, reset_sig_stu_id_s = sign_message(stuID, IK_Pri)
-# Verify myself with the given code
+# # Verify myself with the given code
 # IKRegVerify(IK_Pri, IK_Pub, verification_code)
 
-# SPK_Pub, SPK_Pri = keyGen() # generate SPKs
-SPK_Pub = Point(int("0x9907000b3b46c9308462dd70e0c0c2506cb562ff9ca25a916d2e67a68b5670e0", 16),
-                int("0xed4930f2f4f7cb77c84c62526158b4d820af068af899ee3242a697a69408721c", 16), curve)
-SPK_Pri = 27280058814014322835872311304572730835600028459540571567859428260032877839542
+# SPK_Pub, SPK_Pri = keyGen()  # generate SPKs
+SPK_Pub = Point(66331158853220778162825121078733586816456999454427083347515179674153920143331,
+                45084201860451134626463936478291283412349276620097950808674494591713342720848, curve)
+SPK_Pri = 51684599043567019427791939180673528490623665420756140617689541185560822669121
 
-# sign SPKs
+# sign SPKs and register
 SPK_h, SPK_s = sign_message(int.from_bytes(concatenate(SPK_Pub.x, SPK_Pub.y), byteorder='big'), IK_Pri)
 # SPKReg(SPK_h, SPK_s, SPK_Pub.x, SPK_Pub.y)
 
@@ -151,8 +152,12 @@ for i in range(10):
     OTKReg(i, OTK_Pub.x, OTK_Pub.y, hmac)
 print("\n\n")
 print("printing OTKs")
+print("[")
 for i in range(len(OTKs)):
-    print("OTK {}:".format(i))
-    print("x: {}".format(OTKs[i][0].x))
-    print("y: {}".format(OTKs[i][0].y))
-    print("priv: {}".format(OTKs[i][1]))
+    print("{")
+    print("'x': {},".format(OTKs[i][0].x))
+    print("'y': {},".format(OTKs[i][0].y))
+    print("'priv': {},".format(OTKs[i][1]))
+    print("'hmac': {}".format(HMACs[i]))
+    print("},")
+print("]")
