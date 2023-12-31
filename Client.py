@@ -159,18 +159,24 @@ def register_otks(curve, n, khmac, stuID):
 
         hmac_value = calculate_hmac_for_otk(otk_public, khmac)
         OTKReg(i, otk_public.x, otk_public.y, hmac_value)
-        
-s_a, q_a = keyGen()
-h, s = sign_message(s_a, stuID, curve)
 
-IKRegReq(h, s, q_a.x, q_a.y)
+def registerUser(): 
+    s_a, q_a = keyGen()
+    print("IK private:", s_a)
+    h, s = sign_message(s_a, stuID, curve)
 
-spkpr, spkpub = keyGen()
-spkpub_concatenated = convert_and_concatenate(spkpub.x, spkpub.y)
-h_pre, s_pre = sign_message(s_a, spkpub_concatenated, curve)
+    IKRegReq(h, s, q_a.x, q_a.y)
 
-SPKReg(h_pre, s_pre, spkpub.x, spkpub.y)
+    spkpr, spkpub = keyGen()
+    print("SPK private: ", spkpr)
+    
+    spkpub_concatenated = convert_and_concatenate(spkpub.x, spkpub.y)
+    h_pre, s_pre = sign_message(s_a, spkpub_concatenated, curve)
 
-khmac = gen_HMAC(spkpr, IKey_Ser, curve)
+    SPKReg(h_pre, s_pre, spkpub.x, spkpub.y)
 
-register_otks(curve, n, khmac, stuID)
+    khmac = gen_HMAC(spkpr, IKey_Ser, curve)
+
+    register_otks(curve, n, khmac, stuID)
+
+#registerUser()
