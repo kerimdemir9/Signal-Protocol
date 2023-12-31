@@ -140,7 +140,7 @@ KHMAC_to_byte = KHMAC.to_bytes((KHMAC.bit_length() + 7) // 8, byteorder='big')
 OTKs = []
 HMACs = []
 
-ResetOTK(h, s)
+ResetOTK(h, s)  # reset old OTKs
 
 for i in range(10):
     OTK_Pub, OTK_Pri = keyGen()
@@ -158,6 +158,6 @@ for i in range(len(OTKs)):
     print("'x': {},".format(OTKs[i][0].x))
     print("'y': {},".format(OTKs[i][0].y))
     print("'priv': {},".format(OTKs[i][1]))
-    print("'hmac': {}".format(HMACs[i]))
+    print("'hmac': '{}'".format(HMACs[i]))
     print("},")
 print("]")
