@@ -78,7 +78,7 @@ def ResetIK(rcode):
         return True
 
 
-stuID = 34701
+stuID = 28928
 
 #create a long term key
 curve = Setup()

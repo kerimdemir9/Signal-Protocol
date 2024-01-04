@@ -34,13 +34,10 @@ b = curve.b
 
 def IKRegReq(h,s,x,y):
     mes = {'ID':stuID, 'H': h, 'S': s, 'IKPUB.X': x, 'IKPUB.Y': y}
-    print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "IKRegReq"), json = mes)		
-    print(response.json())
 
 def IKRegVerify(code):
     mes = {'ID':stuID, 'CODE': code}
-    print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "IKRegVerif"), json = mes)
     if((response.ok) == False): raise Exception(response.json())
     else:
@@ -51,15 +48,12 @@ def IKRegVerify(code):
 
 def SPKReg(h,s,x,y):
     mes = {'ID':stuID, 'H': h, 'S': s, 'SPKPUB.X': x, 'SPKPUB.Y': y}
-    print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "SPKReg"), json = mes)
-    print(response.json())
 
 def OTKReg(keyID,x,y,hmac):
     mes = {'ID':stuID, 'KEYID': keyID, 'OTKI.X': x, 'OTKI.Y': y, 'HMACI': hmac}
     print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "OTKReg"), json = mes)		
-    print(response.json())
     if((response.ok) == False): return False
     else: return True
 
@@ -154,18 +148,23 @@ def calculate_hmac_for_otk(otk_public, khmac):
     return hmac_obj.hexdigest()
 
 def register_otks(curve, n, khmac, stuID):
+    OTKs = []
     for i in range(10):
         otk_private, otk_public = keyGen()
-
+        print ("OTK #", i, "private: ", otk_private)
         hmac_value = calculate_hmac_for_otk(otk_public, khmac)
         OTKReg(i, otk_public.x, otk_public.y, hmac_value)
+        OTK = {"secret": otk_private, "public.x": otk_public.x, "public.y" : otk_public.y, "hmaci": hmac_value, "id": i}
+        OTKs.append(OTK)
+    return OTKs
 
-def registerUser(): 
+def registerUser():
     s_a, q_a = keyGen()
     print("IK private:", s_a)
     h, s = sign_message(s_a, stuID, curve)
 
     IKRegReq(h, s, q_a.x, q_a.y)
+    IK = {"secret": s_a, "public.x": q_a.x, "public.y": q_a.y, "h": h, "s": s}
 
     spkpr, spkpub = keyGen()
     print("SPK private: ", spkpr)
@@ -174,9 +173,13 @@ def registerUser():
     h_pre, s_pre = sign_message(s_a, spkpub_concatenated, curve)
 
     SPKReg(h_pre, s_pre, spkpub.x, spkpub.y)
-
+    SPK = {"secret": spkpr, "public.x": spkpub.x, "public.y":spkpub.y, "h": h_pre, "s": s_pre}
     khmac = gen_HMAC(spkpr, IKey_Ser, curve)
 
-    register_otks(curve, n, khmac, stuID)
+    OTKs = register_otks(curve, n, khmac, stuID)
+    return IK, SPK, OTKs
 
-#registerUser()
+def registerConferance():
+    con_s_a, con_q_a = keyGen()
+    h, s = sign_message(convert_and_concatenate(con_q_a.x, con_q_a.y), con_s_a, curve)
+    #use exchange partial keys function in phase3

@@ -241,3 +241,17 @@ def BonusChecker(stuID, Kx, Ky):
     print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "BonusChecker"), json=mes)
     print(response.json())
+
+
+longTermPri = 104188328454886925485215855934907513813721063683343529163063087029381787393424
+def checkAndHandleStatus():
+    h, s = SignGen(stuID, E, longTermPri)
+    status = Status(stuID, h, s)
+    if(status.numOTK == 0):
+        IK, SPK , OTKs = reigsterUser() #bu benim clientta phase1 from import yapmayı beceremedim
+        for i in range(10):
+        print ("OTK", i, ":\n")
+        print(otks[i])
+    else:
+        #mesajları al
+    
