@@ -1,7 +1,7 @@
 from ecpy.curves import Curve, Point
 from Crypto.Hash import SHA3_256, HMAC, SHA256
 from Crypto.Cipher import AES
-import phase2_Client_basic as helper
+import phase2.phase2_Client_basic as helper
 from Crypto import Random
 import math
 
