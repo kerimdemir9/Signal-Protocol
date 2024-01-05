@@ -15,6 +15,8 @@ from Crypto.Util.Padding import unpad
 import random
 import re
 import json
+import Phase1.Client as helper
+
 
 API_URL = 'http://harpoon1.sabanciuniv.edu:9999/'
 
@@ -244,14 +246,16 @@ def BonusChecker(stuID, Kx, Ky):
 
 
 longTermPri = 104188328454886925485215855934907513813721063683343529163063087029381787393424
+
 def checkAndHandleStatus():
     h, s = SignGen(stuID, E, longTermPri)
     status = Status(stuID, h, s)
     if(status.numOTK == 0):
-        IK, SPK , OTKs = reigsterUser() #bu benim clientta phase1 from import yapmayı beceremedim
+        IK, SPK , OTKs = helper.registerUser()
         for i in range(10):
-        print ("OTK", i, ":\n")
-        print(otks[i])
+            print ("OTK", i, ":\n")
+            # print(otks[i])
     else:
+        print("getMessage")
         #mesajları al
     
