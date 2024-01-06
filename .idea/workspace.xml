@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="43ebbc33-3a21-4c60-a0b1-3034ff451c55" name="Changes" comment="last update">
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Phase3/phase3_Client_basic.py" beforeDir="false" afterPath="$PROJECT_DIR$/Phase3/phase3_Client_basic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kerim_phase3.py" beforeDir="false" afterPath="$PROJECT_DIR$/kerim_phase3.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +106,7 @@
       <workItem from="1704037575959" duration="1982000" />
       <workItem from="1704040277675" duration="23000" />
       <workItem from="1704222606442" duration="216000" />
-      <workItem from="1704472169986" duration="14587000" />
+      <workItem from="1704472169986" duration="17227000" />
     </task>
     <task id="LOCAL-00001" summary="fix">
       <option name="closed" value="true" />
