@@ -1,9 +1,9 @@
 from ecpy.curves import Curve, Point
 from Crypto.Hash import SHA3_256, HMAC, SHA256
 from Crypto.Cipher import AES
-import phase2.phase2_Client_basic as helper
 from Crypto import Random
 import math
+import phase2_Client_basic as helper
 
 
 def sign_message(message, private_key):
@@ -132,7 +132,7 @@ OTKs = [
 
 # this will make client send 5 messages to my inbox
 h, s = sign_message(helper.stuID, IK_Pri)
-helper.PseudoSendMsg(h, s)
+# helper.PseudoSendMsg(h, s)
 
 messages = dict()
 
@@ -157,7 +157,7 @@ for i in range(5):
 
     aes = AES.new(K_enc.to_bytes((K_enc.bit_length() + 7) // 8, byteorder='big'), AES.MODE_CTR, nonce=nonce)
 
-    plainText = aes.decrypt(ciphertext).decode()
+    plainText = aes.decrypt(ciphertext)
 
     # calculate the mac value
     verify = HMAC.new(K_HMAC.to_bytes((K_HMAC.bit_length() + 7) // 8, byteorder='big'), digestmod=SHA256)

@@ -95,8 +95,8 @@ def SPKReg(h,s,x,y):
     response = requests.put('{}/{}'.format(API_URL, "SPKReg"), json = mes)
     print(response.json())
 
-def OTKReg(keyID,x,y,hmac):
-    mes = {'ID': stuID, 'KEYID': keyID, 'OTKI.X': x, 'OTKI.Y': y, 'HMACI': hmac}
+def OTKReg(stu_id, keyID,x,y,hmac):
+    mes = {'ID': stu_id, 'KEYID': keyID, 'OTKI.X': x, 'OTKI.Y': y, 'HMACI': hmac}
     print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "OTKReg"), json = mes)		
     print(response.json())
@@ -137,8 +137,8 @@ def PseudoSendMsg(h,s):
     print(response.json())
 
 #Get your messages. server will send 1 message from your inbox
-def ReqMsg(h,s):
-    mes = {'ID':stuID, 'H': h, 'S': s}
+def ReqMsg(stu_id, h,s):
+    mes = {'ID':stu_id, 'H': h, 'S': s}
     print("Sending message is: ", mes)
     response = requests.get('{}/{}'.format(API_URL, "ReqMsg"), json = mes)
     print(response.json())
@@ -168,8 +168,8 @@ def Checker(stuID, stuIDB, msgID, decmsg):
 ############## The new functions of phase 3 ###############
 
 #Pseudo-client will send you 5 messages to your inbox via server when you call this function
-def PseudoSendMsgPH3(h,s):
-    mes = {'ID': stuID, 'H': h, 'S': s}
+def PseudoSendMsgPH3(stu_id, h,s):
+    mes = {'ID': stu_id, 'H': h, 'S': s}
     print("Sending message is: ", mes)
     response = requests.put('{}/{}'.format(API_URL, "PseudoSendMsgPH3"), json=mes)
     print(response.json())
