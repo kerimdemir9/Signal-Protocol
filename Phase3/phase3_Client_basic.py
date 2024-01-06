@@ -148,8 +148,8 @@ def ReqMsg(stu_id, h,s):
 
 
 #Get the list of the deleted messages' ids.
-def ReqDelMsg(h,s):
-    mes = {'ID':stuID, 'H': h, 'S': s}
+def ReqDelMsg(stu_id, h,s):
+    mes = {'ID':stu_id, 'H': h, 'S': s}
     print("Sending message is: ", mes)
     response = requests.get('{}/{}'.format(API_URL, "ReqDelMsgs"), json = mes)
     print(response.json())

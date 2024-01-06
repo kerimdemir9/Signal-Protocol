@@ -11,7 +11,7 @@ import secrets
 
 stuID_A = 28853
 # stuID_B = 28928
-stuID_B = 28853
+stuID_B = 18007
 curve = Curve.get_curve('secp256k1')
 n = curve.order
 p = curve.field
@@ -78,10 +78,10 @@ def generate_Ks_receiver(OTK_Priv_receiver, EK_Pub_sender, IK_Pub_sender, SPK_Pr
 
 
 def generate_Ks_sender(IK_Pub_b, Ek_Pri_sender, SPK_Pub_b, IK_Pri_sender, OTK_Pub_b):
-    T1 = IK_Pub_b * Ek_Pri_sender
-    T2 = SPK_Pub_b * Ek_Pri_sender
-    T3 = OTK_Pub_b * Ek_Pri_sender
-    T4 = SPK_Pub_b * IK_Pri_sender
+    T1 = SPK_Pub_b * IK_Pri_sender
+    T2 = IK_Pub_b * Ek_Pri_sender
+    T3 = SPK_Pub_b * Ek_Pri_sender
+    T4 = OTK_Pub_b * Ek_Pri_sender
     U = concatenate(T1.x, T1.y) + concatenate(T2.x, T2.y) + concatenate(T3.x, T3.y) + concatenate(T4.x,
                                                                                                   T4.y) + b'WhatsUpDoc'
 
@@ -104,19 +104,21 @@ def keyGen():
 
 
 def encrypt(k_hmac, k_enc, message):
+    k_enc_byte = k_enc.to_bytes((k_enc.bit_length() + 7) // 8, byteorder='big')
+    k_hmac_byte = k_hmac.to_bytes((k_hmac.bit_length() + 7) // 8, byteorder='big')
+
     # random 8 byte nonce
     nonce = secrets.token_bytes(8)
     # encryption algorithm
-    aes = AES.new(k_enc.to_bytes((k_enc.bit_length() + 7) // 8, byteorder='big'), AES.MODE_CTR, nonce=nonce)
+    aes = AES.new(k_enc_byte, AES.MODE_CTR, nonce=nonce)
 
     # cipherText
     cipher_text = aes.encrypt(bytes(message.encode("utf-8")))
 
-    H_MAC = HMAC.new(k_hmac.to_bytes((k_hmac.bit_length() + 7) // 8, byteorder="big"), msg=cipher_text,
-                     digestmod=SHA256)
+    H_MAC = HMAC.new(k_hmac_byte, digestmod=SHA256)
     # MAC value for our message
-    MAC = ((int.from_bytes(H_MAC.digest(), byteorder="big") % n)  # so that it is inside the curve
-           .to_bytes(((int.from_bytes(H_MAC.digest(), byteorder="big") % n).bit_length() + 7) // 8, byteorder='big'))
+    MAC = H_MAC.update(cipher_text).digest()
+
     # encrypted text
     return int.from_bytes(nonce + cipher_text + MAC, byteorder="big")
 
@@ -183,6 +185,7 @@ def statusCheckAndGenerateNewOTK():
 def decrypt(message, Ks, message_id):
     for i in range(message_id):
         K_enc, K_HMAC, Ks = KDF_Chain(Ks)
+
     nonce = message[:8]
     cipher_text = message[8:-32]
     MAC = message[-32:]
@@ -197,6 +200,9 @@ def decrypt(message, Ks, message_id):
     return plain_text, calculated_mac == MAC
 
 
+messages = []
+
+
 def receiveMessageAndDecipher():
     OTKs = readJson()
     sender_id, OTK_id, message_id, message, sender_ik_x, sender_ik_y, EK_x, EK_y = helper.ReqMsg(stuID_A, h, s)
@@ -207,6 +213,7 @@ def receiveMessageAndDecipher():
     plain_text, is_valid = decrypt(message_to_byte, Ks, message_id)
     if is_valid:
         print("Message received: {}".format(plain_text))
+        messages.append({"sender_id": sender_id, "message_id": message_id, "message": plain_text})
     else:
         print("message MAC is invalid")
 
@@ -215,6 +222,17 @@ def receiveMessageAndDecipher():
 h, s = sign_message(stuID_A, IK_Pri)
 # helper.PseudoSendMsgPH3(stuID_A, h, s)
 # num_message_remain, num_OTK_remain, status_message = helper.Status(stuID_A, h, s)
-# sendMessage(stuID_A, stuID_B, "test message1", 1)
-statusCheckAndGenerateNewOTK()
+# sendMessage(stuID_A, stuID_B, "Alperen hcow are you, how was your exam", 1)
+# statusCheckAndGenerateNewOTK()
 # receiveMessageAndDecipher()
+
+def flow():
+    h, s = sign_message(stuID_A, IK_Pri)
+    helper.PseudoSendMsgPH3(stuID_A, h, s)
+    for i in range(5):
+        receiveMessageAndDecipher()
+
+    for i in range(len(messages)):
+        sendMessage(stuID_A, stuID_B, messages[i]["message"], messages[i]["message_id"])
+
+flow()
