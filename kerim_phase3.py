@@ -1,5 +1,4 @@
 import math
-import random
 import json
 from Crypto.Cipher import AES
 from ecpy.curves import Curve, Point
@@ -11,7 +10,7 @@ import secrets
 
 stuID_A = 28853
 # stuID_B = 28928
-stuID_B = 18007
+stuID_B = 28853
 curve = Curve.get_curve('secp256k1')
 n = curve.order
 p = curve.field
@@ -222,9 +221,10 @@ def receiveMessageAndDecipher():
 h, s = sign_message(stuID_A, IK_Pri)
 # helper.PseudoSendMsgPH3(stuID_A, h, s)
 # num_message_remain, num_OTK_remain, status_message = helper.Status(stuID_A, h, s)
-# sendMessage(stuID_A, stuID_B, "Alperen hcow are you, how was your exam", 1)
+# sendMessage(stuID_A, stuID_B, "Nasılsın", 2)
 # statusCheckAndGenerateNewOTK()
-# receiveMessageAndDecipher()
+receiveMessageAndDecipher()
+
 
 def flow():
     h, s = sign_message(stuID_A, IK_Pri)
@@ -235,4 +235,4 @@ def flow():
     for i in range(len(messages)):
         sendMessage(stuID_A, stuID_B, messages[i]["message"], messages[i]["message_id"])
 
-flow()
+# flow()
