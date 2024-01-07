@@ -487,7 +487,7 @@ def flow():
 # ResetOTK(h, s)
 # ResetSPK(h, s)
 # ResetIK(keys["rcode"])
-#
+
 # registerIK()
 # verificationCode = 0
 # verifyIKAndRegisterSPKAndOTKs(verificationCode)
@@ -498,3 +498,4 @@ def flow():
 
 # PHASE 3
 # flow()
+# statusCheckAndGenerateNewOTK()
